@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .models import Item
+from django.utils import timezone
 import json
 
 
@@ -25,5 +26,17 @@ def update(request):
         item.is_done = is_done
         item.save()
         return HttpResponse('Successfully updated item.')
+    except Exception as e:
+        return HttpResponse(str(e), status=500)
+
+@csrf_exempt
+@require_POST
+def add(request):
+    try:
+        data = json.loads(request.body)
+        label = data.get('label_text')
+        item = Item(label_text=label, added_date=timezone.now(), is_done=False)
+        item.save()
+        return JsonResponse({'id': item.pk})
     except Exception as e:
         return HttpResponse(str(e), status=500)
