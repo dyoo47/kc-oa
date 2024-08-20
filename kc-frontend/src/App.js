@@ -14,6 +14,26 @@ function App() {
       });
   };
 
+  const formatDate = (dateString) => {
+    var date = new Date(dateString);
+    return date.getDate() + " " + months[date.getMonth()];
+  };
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
   useEffect(() => {
     fetchTodoItems();
   }, []);
@@ -21,7 +41,7 @@ function App() {
   const TodoItem = (props) => {
     return (
       <div
-        className="flex cursor-pointer justify-between mt-2 rounded p-4 bg-slate-600 bg-opacity-0 hover:bg-opacity-40 transition duration-150 ease-out"
+        className="flex font-bold cursor-pointer justify-between border-b p-4 bg-slate-300 bg-opacity-0 hover:bg-opacity-40 transition duration-150 ease-out"
         onClick={() => {
           // Send POST request to update backend
           fetch("http://localhost:8000/todo/update", {
@@ -48,19 +68,27 @@ function App() {
         }}
       >
         <p className={props.item.fields.is_done ? "line-through" : ""}>
+          <input
+            type="checkbox"
+            className="mr-4"
+            checked={props.item.fields.is_done}
+          />
           {props.item.fields.label_text}
+        </p>
+        <p className="font-normal text-gray-400">
+          {formatDate(props.item.fields.added_date)}
         </p>
       </div>
     );
   };
 
   return (
-    <div className="bg-slate-400 w-screen h-screen">
+    <div className="w-screen h-screen">
       <div className="container mx-auto">
-        <h1 className="text-3xl font-bold text-center py-8">To-do App</h1>
+        <h1 className="text-3xl text-center py-8">To-do App</h1>
         <div className="flex">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={labelText}
             onChange={(e) => {
               setLabelText(e.target.value);
@@ -69,7 +97,7 @@ function App() {
             placeholder="Enter a new to-do item..."
           ></input>
           <button
-            class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 rounded focus:outline-none focus:shadow-outline"
             type="button"
             onClick={() => {
               fetch("http://localhost:8000/todo/add", {
@@ -83,10 +111,25 @@ function App() {
                 }),
               }).then(() => {
                 fetchTodoItems();
+                setLabelText("");
               });
             }}
           >
-            Add
+            {/* "plus" from https://heroicons.com/ */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
           </button>
         </div>
         {itemList.map((item) => (
