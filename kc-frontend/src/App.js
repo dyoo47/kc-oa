@@ -10,8 +10,48 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         setItemList(data);
-        console.log(data);
       });
+  };
+
+  const addTodoItem = () => {
+    fetch("http://localhost:8000/todo/add", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        label_text: labelText,
+      }),
+    }).then(() => {
+      fetchTodoItems();
+      setLabelText("");
+    });
+  };
+
+  const updateTodoItem = (itemToUpdate) => {
+    // Send POST request to update backend
+    fetch("http://localhost:8000/todo/update", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        item_id: itemToUpdate.pk,
+        is_done: !itemToUpdate.fields.is_done,
+      }),
+    });
+
+    // Update frontend state
+    setItemList(
+      itemList.map((item) => {
+        if (item.pk === itemToUpdate.pk) {
+          item.fields.is_done = !item.fields.is_done;
+        }
+        return item;
+      })
+    );
   };
 
   const formatDate = (dateString) => {
@@ -38,45 +78,24 @@ function App() {
     fetchTodoItems();
   }, []);
 
-  const TodoItem = (props) => {
+  const TodoItem = ({ item }) => {
     return (
       <div
         className="flex font-bold cursor-pointer justify-between border-b p-4 bg-slate-300 bg-opacity-0 hover:bg-opacity-40 transition duration-150 ease-out"
         onClick={() => {
-          // Send POST request to update backend
-          fetch("http://localhost:8000/todo/update", {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              item_id: props.item.pk,
-              is_done: !props.item.fields.is_done,
-            }),
-          });
-
-          // Update frontend state
-          setItemList(
-            itemList.map((item) => {
-              if (item.pk === props.item.pk) {
-                item.fields.is_done = !item.fields.is_done;
-              }
-              return item;
-            })
-          );
+          updateTodoItem(item);
         }}
       >
-        <p className={props.item.fields.is_done ? "line-through" : ""}>
+        <p className={item.fields.is_done ? "line-through" : ""}>
           <input
             type="checkbox"
             className="mr-4"
-            checked={props.item.fields.is_done}
+            checked={item.fields.is_done}
           />
-          {props.item.fields.label_text}
+          {item.fields.label_text}
         </p>
         <p className="font-normal text-gray-400">
-          {formatDate(props.item.fields.added_date)}
+          {formatDate(item.fields.added_date)}
         </p>
       </div>
     );
@@ -100,19 +119,7 @@ function App() {
             class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 rounded focus:outline-none focus:shadow-outline"
             type="button"
             onClick={() => {
-              fetch("http://localhost:8000/todo/add", {
-                method: "POST",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  label_text: labelText,
-                }),
-              }).then(() => {
-                fetchTodoItems();
-                setLabelText("");
-              });
+              addTodoItem();
             }}
           >
             {/* "plus" from https://heroicons.com/ */}
